@@ -30,16 +30,16 @@ import pandas
 from dotenv import load_dotenv
 
 from flask import (
-    Flask, 
-    flash, 
-    request, 
-    jsonify, 
-    render_template, 
-    redirect, 
-    url_for, 
-    session, 
-    send_from_directory, 
-    send_file, 
+    Flask,
+    flash,
+    request,
+    jsonify,
+    render_template,
+    redirect,
+    url_for,
+    session,
+    send_from_directory,
+    send_file,
     Markup,
     current_app
 )
@@ -88,7 +88,7 @@ load_dotenv()
 EXECUTOR_TYPE = 'thread'
 EXECUTOR_MAX_WORKERS = 30
 SESSION_TYPE = 'filesystem'
-VERSION = "0.229.098"
+VERSION = "0.229.099"
 
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -121,8 +121,8 @@ CLIENTS = {}
 CLIENTS_LOCK = threading.Lock()
 
 ALLOWED_EXTENSIONS = {
-    'txt', 'pdf', 'doc', 'docm', 'docx', 'xlsx', 'xls', 'xlsm','csv', 'pptx', 'html', 'jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'heif', 'md', 'json', 
-    'mp4', 'mov', 'avi', 'mkv', 'flv', 'mxf', 'gxf', 'ts', 'ps', '3gp', '3gpp', 'mpg', 'wmv', 'asf', 'm4a', 'm4v', 'isma', 'ismv', 
+    'txt', 'pdf', 'doc', 'docm', 'docx', 'xlsx', 'xls', 'xlsm','csv', 'pptx', 'html', 'jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'heif', 'md', 'json',
+    'mp4', 'mov', 'avi', 'mkv', 'flv', 'mxf', 'gxf', 'ts', 'ps', '3gp', '3gpp', 'mpg', 'wmv', 'asf', 'm4a', 'm4v', 'isma', 'ismv',
     'dvr-ms', 'wav', 'xml', 'yaml', 'yml', 'log'
 }
 ALLOWED_EXTENSIONS_IMG = {'png', 'jpg', 'jpeg'}
@@ -173,7 +173,7 @@ elif AZURE_ENVIRONMENT == "custom":
     resource_manager = CUSTOM_RESOURCE_MANAGER_URL_VALUE
     authority = CUSTOM_IDENTITY_URL_VALUE
     credential_scopes=[resource_manager + "/.default"]
-    cognitive_services_scope = CUSTOM_COGNITIVE_SERVICES_URL_VALUE  
+    cognitive_services_scope = CUSTOM_COGNITIVE_SERVICES_URL_VALUE
     search_resource_manager = CUSTOM_SEARCH_RESOURCE_MANAGER_URL_VALUE
 else:
     OIDC_METADATA_URL = f"https://login.microsoftonline.com/{TENANT_ID}/v2.0/.well-known/openid-configuration"
@@ -199,28 +199,13 @@ else:
 cosmos_database_name = "SimpleChat"
 cosmos_database = cosmos_client.create_database_if_not_exists(cosmos_database_name)
 
-cosmos_conversations_container_name = "conversations"
-cosmos_conversations_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_conversations_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_messages_container_name = "messages"
-cosmos_messages_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_messages_container_name,
-    partition_key=PartitionKey(path="/conversation_id")
-)
-
+# ==============================================================================
+# ESSENTIAL CONTAINERS FOR STATELESS TEAMS BOT MVP
+# ==============================================================================
 
 cosmos_settings_container_name = "settings"
 cosmos_settings_container = cosmos_database.create_container_if_not_exists(
     id=cosmos_settings_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_groups_container_name = "groups"
-cosmos_groups_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_groups_container_name,
     partition_key=PartitionKey(path="/id")
 )
 
@@ -230,131 +215,178 @@ cosmos_public_workspaces_container = cosmos_database.create_container_if_not_exi
     partition_key=PartitionKey(path="/id")
 )
 
-cosmos_user_documents_container_name = "documents"
-cosmos_user_documents_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_user_documents_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_group_documents_container_name = "group_documents"
-cosmos_group_documents_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_group_documents_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
 cosmos_public_documents_container_name = "public_documents"
 cosmos_public_documents_container = cosmos_database.create_container_if_not_exists(
     id=cosmos_public_documents_container_name,
     partition_key=PartitionKey(path="/id")
 )
 
-cosmos_user_settings_container_name = "user_settings"
-cosmos_user_settings_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_user_settings_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_safety_container_name = "safety"
-cosmos_safety_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_safety_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_feedback_container_name = "feedback"
-cosmos_feedback_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_feedback_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_archived_conversations_container_name = "archived_conversations"
-cosmos_archived_conversations_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_archived_conversations_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_archived_messages_container_name = "archived_messages"
-cosmos_archived_messages_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_archived_messages_container_name,
-    partition_key=PartitionKey(path="/conversation_id")
-)
-
-cosmos_user_prompts_container_name = "prompts"
-cosmos_user_prompts_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_user_prompts_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_group_prompts_container_name = "group_prompts"
-cosmos_group_prompts_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_group_prompts_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
-cosmos_public_prompts_container_name = "public_prompts"
-cosmos_public_prompts_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_public_prompts_container_name,
-    partition_key=PartitionKey(path="/id")
-)
-
+# Optional: Useful for tracking document ingestion progress
 cosmos_file_processing_container_name = "file_processing"
 cosmos_file_processing_container = cosmos_database.create_container_if_not_exists(
     id=cosmos_file_processing_container_name,
     partition_key=PartitionKey(path="/document_id")
 )
 
-cosmos_personal_agents_container_name = "personal_agents"
-cosmos_personal_agents_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_personal_agents_container_name,
-    partition_key=PartitionKey(path="/user_id")
-)
+# ==============================================================================
+# COMMENTED OUT: Stateful conversation support (for future multi-turn conversations)
+# Uncomment these two containers to enable conversation history and follow-up questions
+# ==============================================================================
+# cosmos_conversations_container_name = "conversations"
+# cosmos_conversations_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_conversations_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
 
-cosmos_personal_actions_container_name = "personal_actions"
-cosmos_personal_actions_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_personal_actions_container_name,
-    partition_key=PartitionKey(path="/user_id")
-)
+# cosmos_messages_container_name = "messages"
+# cosmos_messages_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_messages_container_name,
+#     partition_key=PartitionKey(path="/conversation_id")
+# )
 
-cosmos_file_processing_container_name = "group_messages"
-cosmos_file_processing_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_file_processing_container_name,
-    partition_key=PartitionKey(path="/conversation_id")
-)
+# ==============================================================================
+# COMMENTED OUT: Group collaboration features (not needed for Teams bot)
+# ==============================================================================
+# cosmos_groups_container_name = "groups"
+# cosmos_groups_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_groups_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
 
-cosmos_file_processing_container_name = "group_conversations"
-cosmos_file_processing_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_file_processing_container_name,
-    partition_key=PartitionKey(path="/id")
-)
+# cosmos_group_documents_container_name = "group_documents"
+# cosmos_group_documents_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_group_documents_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
 
-cosmos_group_agents_container_name = "group_agents"
-cosmos_group_agents_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_group_agents_container_name,
-    partition_key=PartitionKey(path="/group_id")
-)
+# cosmos_group_prompts_container_name = "group_prompts"
+# cosmos_group_prompts_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_group_prompts_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
 
-cosmos_group_actions_container_name = "group_actions"
-cosmos_group_actions_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_group_actions_container_name,
-    partition_key=PartitionKey(path="/group_id")
-)
+# cosmos_group_messages_container_name = "group_messages"
+# cosmos_group_messages_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_group_messages_container_name,
+#     partition_key=PartitionKey(path="/conversation_id")
+# )
 
-cosmos_global_agents_container_name = "global_agents"
-cosmos_global_agents_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_global_agents_container_name,
-    partition_key=PartitionKey(path="/id")
-)
+# cosmos_group_conversations_container_name = "group_conversations"
+# cosmos_group_conversations_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_group_conversations_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
 
-cosmos_global_actions_container_name = "global_actions"
-cosmos_global_actions_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_global_actions_container_name,
-    partition_key=PartitionKey(path="/id")
-)
+# cosmos_group_agents_container_name = "group_agents"
+# cosmos_group_agents_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_group_agents_container_name,
+#     partition_key=PartitionKey(path="/group_id")
+# )
 
-cosmos_agent_facts_container_name = "agent_facts"
-cosmos_agent_facts_container = cosmos_database.create_container_if_not_exists(
-    id=cosmos_agent_facts_container_name,
-    partition_key=PartitionKey(path="/scope_id")
-)
+# cosmos_group_actions_container_name = "group_actions"
+# cosmos_group_actions_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_group_actions_container_name,
+#     partition_key=PartitionKey(path="/group_id")
+# )
+
+# ==============================================================================
+# COMMENTED OUT: User-specific features (not needed for stateless bot)
+# ==============================================================================
+# cosmos_user_documents_container_name = "documents"
+# cosmos_user_documents_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_user_documents_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# cosmos_user_settings_container_name = "user_settings"
+# cosmos_user_settings_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_user_settings_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# cosmos_user_prompts_container_name = "prompts"
+# cosmos_user_prompts_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_user_prompts_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# ==============================================================================
+# COMMENTED OUT: Agent orchestration features (archived functionality)
+# These supported the multi-agent system with Semantic Kernel orchestration
+# ==============================================================================
+# cosmos_personal_agents_container_name = "personal_agents"
+# cosmos_personal_agents_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_personal_agents_container_name,
+#     partition_key=PartitionKey(path="/user_id")
+# )
+
+# cosmos_personal_actions_container_name = "personal_actions"
+# cosmos_personal_actions_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_personal_actions_container_name,
+#     partition_key=PartitionKey(path="/user_id")
+# )
+
+# cosmos_global_agents_container_name = "global_agents"
+# cosmos_global_agents_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_global_agents_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# cosmos_global_actions_container_name = "global_actions"
+# cosmos_global_actions_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_global_actions_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# cosmos_agent_facts_container_name = "agent_facts"
+# cosmos_agent_facts_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_agent_facts_container_name,
+#     partition_key=PartitionKey(path="/scope_id")
+# )
+
+# ==============================================================================
+# COMMENTED OUT: Additional features (safety, feedback, archives)
+# ==============================================================================
+# cosmos_safety_container_name = "safety"
+# cosmos_safety_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_safety_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# cosmos_feedback_container_name = "feedback"
+# cosmos_feedback_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_feedback_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# cosmos_archived_conversations_container_name = "archived_conversations"
+# cosmos_archived_conversations_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_archived_conversations_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# cosmos_archived_messages_container_name = "archived_messages"
+# cosmos_archived_messages_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_archived_messages_container_name,
+#     partition_key=PartitionKey(path="/conversation_id")
+# )
+
+# cosmos_public_prompts_container_name = "public_prompts"
+# cosmos_public_prompts_container = cosmos_database.create_container_if_not_exists(
+#     id=cosmos_public_prompts_container_name,
+#     partition_key=PartitionKey(path="/id")
+# )
+
+# ==============================================================================
+# TEAMS BOT CONFIGURATION
+# ==============================================================================
+
+# Teams Bot Framework Authentication
+TEAMS_BOT_APP_ID = os.getenv('TEAMS_BOT_APP_ID', '')  # Microsoft App ID from Bot Registration
+TEAMS_BOT_APP_PASSWORD = os.getenv('TEAMS_BOT_APP_PASSWORD', '')  # Client Secret from Bot Registration
+
+# HR Workspace Configuration
+HR_WORKSPACE_ID = os.getenv('HR_WORKSPACE_ID', 'hr-public-workspace')  # Public workspace for HR documents
 
 def ensure_custom_logo_file_exists(app, settings):
     """
@@ -637,13 +669,13 @@ def initialize_clients(settings):
                 elif settings.get("office_docs_authentication_type") == "managed_identity":
                     blob_service_client = BlobServiceClient(account_url=settings.get("office_docs_storage_account_blob_endpoint"), credential=DefaultAzureCredential())
                     CLIENTS["storage_account_office_docs_client"] = blob_service_client
-                
+
                 # Create containers if they don't exist
                 # This addresses the issue where the application assumes containers exist
                 if blob_service_client:
                     for container_name in [
-                        storage_account_user_documents_container_name, 
-                        storage_account_group_documents_container_name, 
+                        storage_account_user_documents_container_name,
+                        storage_account_group_documents_container_name,
                         storage_account_public_documents_container_name
                         ]:
                         try:

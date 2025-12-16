@@ -1,0 +1,129 @@
+# Example Terraform Variables for Teams HR Bot Deployment
+# Copy this file to terraform.tfvars and fill in your values
+
+# ============================================================================
+# REQUIRED VARIABLES
+# ============================================================================
+
+# Azure Subscription and Tenant
+param_subscription_id = "00000000-0000-0000-0000-000000000000"  # Your Azure subscription ID
+param_tenant_id       = "00000000-0000-0000-0000-000000000000"  # Your Azure AD tenant ID
+
+# Deployment Location
+param_location = "usgovvirginia"  # Azure Government: usgovvirginia, usgovarizona, usgovtexas
+# param_location = "eastus"       # Azure Commercial: eastus, westus2, etc.
+
+# Environment Configuration
+param_environment = "dev"  # dev, test, prod, uat
+
+# Project Name (keep short, alphanumeric only)
+param_base_name = "hrbot"  # Examples: hrbot, contoso, mycompany
+
+# Resource Owner Information (for tagging)
+param_resource_owner_id       = "John Doe"
+param_resource_owner_email_id = "john.doe@company.gov"  # Must be valid user in tenant
+
+# ============================================================================
+# AZURE PLATFORM
+# ============================================================================
+
+# Choose your Azure platform
+global_which_azure_platform = "AzureUSGovernment"  # or "AzureCloud" for commercial
+# global_which_azure_platform = "AzureCloud"
+
+# ============================================================================
+# AZURE OPENAI (Optional)
+# ============================================================================
+
+# Use existing Azure OpenAI instance (if you already have one)
+param_use_existing_openai_instance = false
+
+# If using existing OpenAI, provide these:
+# param_existing_azure_openai_resource_name      = "my-existing-openai"
+# param_existing_azure_openai_resource_group_name = "my-existing-rg"
+
+# ============================================================================
+# HR BOT CONFIGURATION (Optional)
+# ============================================================================
+
+# HR workspace ID (default is fine for most cases)
+# hr_workspace_id = "hr-public-workspace"
+
+# ============================================================================
+# EXAMPLE CONFIGURATIONS
+# ============================================================================
+
+# Example 1: Azure Government Development
+# param_base_name                 = "hrbot"
+# param_environment               = "dev"
+# param_location                  = "usgovvirginia"
+# global_which_azure_platform     = "AzureUSGovernment"
+# param_use_existing_openai_instance = false
+
+# Example 2: Azure Commercial Production
+# param_base_name                 = "contoso"
+# param_environment               = "prod"
+# param_location                  = "eastus"
+# global_which_azure_platform     = "AzureCloud"
+# param_use_existing_openai_instance = false
+
+# Example 3: Using Existing OpenAI
+# param_base_name                                 = "myhrbot"
+# param_environment                               = "test"
+# param_location                                  = "usgovvirginia"
+# global_which_azure_platform                     = "AzureUSGovernment"
+# param_use_existing_openai_instance              = true
+# param_existing_azure_openai_resource_name      = "company-shared-openai"
+# param_existing_azure_openai_resource_group_name = "shared-ai-resources-rg"
+
+# ============================================================================
+# DEPLOYMENT NOTES
+# ============================================================================
+
+# Resource Naming Convention:
+# - Resource Group:    sc-{base_name}-{env}-rg          Example: sc-hrbot-dev-rg
+# - App Service:       {base_name}-{env}-app            Example: hrbot-dev-app
+# - Cosmos DB:         {base_name}-{env}-cosmos         Example: hrbot-dev-cosmos
+# - Azure OpenAI:      {base_name}-{env}-oai            Example: hrbot-dev-oai
+# - AI Search:         {base_name}-{env}-search         Example: hrbot-dev-search
+# - Bot Service:       {base_name}-{env}-bot            Example: hrbot-dev-bot
+# - Storage Account:   {base_name}{env}sa               Example: hrbotdevsa
+
+# Resources Created (MVP):
+# ✅ Resource Group
+# ✅ App Service Plan (B1 - ~$13/month)
+# ✅ Linux Web App (Python 3.11)
+# ✅ Azure OpenAI + 2 Model Deployments (gpt-4o, text-embedding-3-small)
+# ✅ AI Search (Basic - ~$75/month)
+# ✅ Cosmos DB Serverless + 4 Containers
+# ✅ Storage Account + 1 Blob Container
+# ✅ Document Intelligence (S0)
+# ✅ Bot Service (F0 - Free)
+# ✅ Teams Channel
+# ✅ App Registration + Service Principal
+# ✅ Managed Identity
+# ✅ Application Insights
+# ✅ Log Analytics Workspace
+# ✅ RBAC Role Assignments
+
+# Estimated Monthly Cost (Development):
+# - App Service B1:         ~$13
+# - Cosmos DB Serverless:   ~$5-10
+# - AI Search Basic:        ~$75
+# - Azure OpenAI:           Pay-per-use (~$20-50 testing)
+# - Document Intelligence:  Pay-per-page
+# - Storage:                ~$1-2
+# - Bot Service F0:         Free
+# - Other services:         Minimal
+# TOTAL:                    ~$115-150/month
+
+# ============================================================================
+# VALIDATION
+# ============================================================================
+
+# Before running terraform apply, ensure:
+# ✅ Azure CLI is logged in: az login
+# ✅ Correct subscription is selected: az account show
+# ✅ User email exists in tenant: az ad user show --id "email@domain.com"
+# ✅ base_name is short and alphanumeric (no special chars)
+# ✅ location is valid for your Azure platform
